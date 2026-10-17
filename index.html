@@ -43,6 +43,14 @@ body{margin:0;background:#050302;color:#e8d3a0;font-family:Georgia,serif;overflo
 #q{font-family:'IM Fell English SC',Georgia,serif;font-size:4vh!important;color:#f3dfb4;text-shadow:0 0 1vh #000,0 0 2vh #000;z-index:8}
 #spell{font-family:'IM Fell English SC',Georgia,serif;z-index:8}
 #qr,#snd,#fb,#foot{z-index:9}
+@media (orientation:portrait){
+#board{width:96vw!important;height:62vw!important;margin-top:0!important}
+.l{font-size:5vw!important}
+#q{top:10vh!important;font-size:2.6vh!important;padding:0 4vw!important;max-height:12vh!important}
+#spell{bottom:auto!important;top:calc(50% + 35vw)!important;font-size:4.5vh!important;white-space:normal!important;height:auto!important;line-height:5vh!important;padding:0 4vw}
+#qr img{width:15vh}#qr{font-size:1.6vh}
+.candle{height:8vh!important;width:2vh}.web{width:16vh}#fb input{width:40vw}
+}
 </style></head><body>
 <div id="tv"><svg width="0" height="0" style="position:absolute"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".012 .35" numOctaves="4" seed="7"/><feColorMatrix values="0 0 0 0 .25 0 0 0 0 .13 0 0 0 0 .05 0 0 0 1.4 -.25"/></filter><filter id="grain2"><feTurbulence type="fractalNoise" baseFrequency=".006 .12" numOctaves="3"/><feColorMatrix values="0 0 0 0 .12 0 0 0 0 .07 0 0 0 0 .03 0 0 0 0 1"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter></svg><div id="table"></div><div class="glow" style="left:12%;top:70%"></div><div class="glow" style="left:88%;top:70%;animation-delay:-1s"></div><div class="candle" style="left:4vw"><i></i></div><div class="candle" style="left:8vw;height:10vh"><i></i></div><div class="candle" style="right:24vh;height:11vh"><i></i></div><svg class="web" style="left:0;top:0" viewBox="0 0 100 100"><g stroke="#ddd" stroke-width=".4" fill="none"><path d="M0 0L100 60M0 0L80 80M0 0L60 100M0 0L100 30M0 0L30 100"/><path d="M20 12Q18 18 12 20M40 24Q36 36 24 40M60 36Q54 54 36 60M80 48Q72 72 48 80"/></g></svg><svg class="web" style="right:0;top:0;transform:scaleX(-1)" viewBox="0 0 100 100"><g stroke="#ddd" stroke-width=".4" fill="none"><path d="M0 0L100 60M0 0L80 80M0 0L60 100M0 0L100 30M0 0L30 100"/><path d="M20 12Q18 18 12 20M40 24Q36 36 24 40M60 36Q54 54 36 60M80 48Q72 72 48 80"/></g></svg><canvas id="fog"></canvas><div id="vig"></div><div id="q"></div><div id="board"><div id="plan"></div></div><div id="spell"></div>
 <div id="qr"><img src="qr-phone.png" alt="QR">Scan to ask the spirit</div>
