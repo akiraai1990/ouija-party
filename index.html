@@ -93,10 +93,10 @@ const queue=[];let busy=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function enq(n,q,p){if(queue.length>=20)return;queue.push({n,q,p});run()}
 async function run(){if(busy||!queue.length)return;busy=true;const {n,q,p}=queue.shift();
  document.getElementById('q').textContent=(n?n.toUpperCase():'A GUEST')+' asks: '+q;whisper();spell.textContent='';await sleep(2500);
- const a=(p!=null&&PRESETS[p])?PRESETS[p].a[Math.floor(Math.random()*PRESETS[p].a.length)]:answer(q);window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
+ const a=(p!=null&&PRESETS[p])?bag(p):answer(q);window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
  for(const c of toks){if(c===' '){spell.textContent+=' ';continue}const k=pos[c]?c:' ';mv(k);ghost();await sleep(1250);spell.textContent+=c;await sleep(350)}
  await sleep(1500);if(!queue.length){mv('GOODBYE');await sleep(1300);scream()}await sleep(2500);mv(' ');busy=false;run()}
-window.enq=enq;
+window.enq=enq;const BAGS={};function bag(p){if(!BAGS[p]||!BAGS[p].length)BAGS[p]=[...PRESETS[p].a].sort(()=>Math.random()-.5);return BAGS[p].pop()}
 fb.onsubmit=e=>{e.preventDefault();if(fq.value.trim())enq('',fq.value.trim());fq.value=''};
 function connect(){const es=new EventSource(TOPIC+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==='message'){const d=JSON.parse(m.message);enq(String(d.n||'').slice(0,30),String(d.q||'').slice(0,140),Number.isInteger(d.p)?d.p:null)}}catch(x){}};window.relayOK=()=>es.readyState}
 const fc=document.getElementById('fog'),fx=fc.getContext('2d');let FP=[];function fr(){fc.width=innerWidth/2;fc.height=innerHeight/2;FP=Array.from({length:40},()=>({x:Math.random()*fc.width,y:Math.random()*fc.height,r:20+Math.random()*80,v:.1+Math.random()*.3,a:Math.random()*.06}))}fr();onresize=fr;
