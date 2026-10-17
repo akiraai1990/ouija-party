@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ouija</title>
-<script src="bank.js"></script>
+<script src="bank.js"></script><script src="presets.js"></script>
 <style>
 body{margin:0;background:#050302;color:#e8d3a0;font-family:Georgia,serif;overflow:hidden}
 #tv{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#2a1608 0%,#050302 75%)}
@@ -15,19 +15,23 @@ body{margin:0;background:#050302;color:#e8d3a0;font-family:Georgia,serif;overflo
 #snd{position:fixed;top:1vh;right:1vw;background:#400;color:#fdd;border:0;padding:8px 14px;font-size:2vh;border-radius:8px}
 #foot{position:fixed;bottom:.3vh;left:50%;transform:translateX(-50%);font-size:1.6vh;opacity:.5}
 #phone{display:none;padding:24px;max-width:480px;margin:auto;overflow:auto}
-#phone input,#phone textarea,#phone button{width:100%;box-sizing:border-box;margin:8px 0;padding:14px;font-size:18px;background:#1a0f08;color:#e8d3a0;border:1px solid #6b4423;border-radius:10px}
-#phone button{background:#7a1f0f;font-weight:bold}
+#phone input,#phone textarea,#pre button{background:#2a1208;font-weight:normal;font-size:20px;padding:18px}
+#phone button#ps,#phone button.x{width:100%;box-sizing:border-box;margin:8px 0;padding:14px;font-size:18px;background:#1a0f08;color:#e8d3a0;border:1px solid #6b4423;border-radius:10px}
+#pre button{background:#2a1208;font-weight:normal;font-size:20px;padding:18px}
+#phone button#ps,#phone button.x{background:#7a1f0f;font-weight:bold}
 </style></head><body>
 <div id="tv"><div id="q"></div><div id="board"><div id="plan"></div></div><div id="spell"></div>
 <div id="qr"><img src="qr-phone.png" alt="QR">Scan to ask the spirit</div>
 <form id="fb"><input id="fq" placeholder="Ask here if phones fail" size="28"><button>Ask</button></form>
 <button id="snd">🔊 Tap for sound</button><div id="foot">akirax.si</div></div>
-<div id="phone"><h1>🕯️ Ask the Spirit</h1><input id="pn" placeholder="Your name (optional)" maxlength="30"><textarea id="pq" rows="3" placeholder="Your question..." maxlength="140"></textarea><button id="ps">Send</button><p id="pm"></p><p style="opacity:.5;text-align:center">akirax.si</p></div>
+<div id="phone"><h1>🕯️ Ask the Spirit</h1><input id="pn" placeholder="Your name (optional)" maxlength="30"><div id="pre"></div><a href="#" id="own" style="color:#c9a36a;display:block;margin:10px 0">ask your own question</a><div id="ownbox" style="display:none"><textarea id="pq" rows="3" placeholder="Your question..." maxlength="140"></textarea><button id="ps">Send</button></div><p id="pm"></p><p style="opacity:.5;text-align:center">akirax.si</p></div>
 <script>
 const EXTRA=["THE OUIJA KNOWS","SPEAK UP","I HEAR YOU","CLOSER","WRONG QUESTION","BRAVE SOUL","FOOLISH SOUL","THE WIND KNOWS","CROWS AGREE","NOT FOR YOU","LATER","SOON SOON","WHO ASKS","WHY","THE MOON SAYS HI","BEHOLD","OBEY","FEAR NOT","FEAR","YIKES","THE SPIRIT YAWNS"];BANK.gen=BANK.gen.concat(EXTRA);
 const TOPIC='https://ntfy.sh/'+ROOM;
 if(location.search.includes('phone')){document.getElementById('tv').style.display='none';const P=document.getElementById('phone');P.style.display='block';document.body.style.overflow='auto';
- ps.onclick=async()=>{const q=pq.value.trim();if(!q)return;pm.textContent='Sending to the other side...';try{await fetch(TOPIC,{method:'POST',body:JSON.stringify({n:pn.value.trim().slice(0,30),q:q.slice(0,140)})});pm.textContent='The spirit has heard you. Watch the board.';pq.value=''}catch(e){pm.textContent='The veil blocked it. Try again.'}}}
+ async function send(q,p){q=q.trim();if(!q)return;pm.textContent='Sending to the other side...';const m={n:pn.value.trim().slice(0,30),q:q.slice(0,140)};if(p!=null)m.p=p;try{await fetch(TOPIC,{method:'POST',body:JSON.stringify(m)});pm.textContent='The spirit has heard you. Watch the board.';pq.value='';shuffle()}catch(e){pm.textContent='The veil blocked it. Try again.'}}
+function shuffle(){pre.textContent='';const ids=[...PRESETS.keys()].sort(()=>Math.random()-.5).slice(0,3);for(const i of ids){const b=document.createElement('button');b.textContent=PRESETS[i].q;b.onclick=()=>send(PRESETS[i].q,i);pre.appendChild(b)}}
+shuffle();own.onclick=e=>{e.preventDefault();ownbox.style.display='block';own.style.display='none';pq.focus()};ps.onclick=()=>send(pq.value,null)}
 else{
 const B=document.getElementById('board'),pos={};
 function put(t,x,y,s){const d=document.createElement('div');d.className='l';d.textContent=t;d.style.left=x+'%';d.style.top=y+'%';if(s)d.style.fontSize=s;B.appendChild(d);pos[t]=[x,y]}
@@ -52,14 +56,14 @@ function answer(q){q=' '+q.toLowerCase()+' ';
  if(/^\s*(is|are|am|will|do|does|did|can|could|should|would|have|has|was)\b/.test(q)){const r=Math.random();return pick(r<.4?BANK.yes:r<.8?BANK.no:BANK.maybe)}
  return pick(Math.random()<.3?BANK.maybe:BANK.gen)}
 const queue=[];let busy=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function enq(n,q){queue.push({n,q});run()}
-async function run(){if(busy||!queue.length)return;busy=true;const {n,q}=queue.shift();
+function enq(n,q,p){if(queue.length>=20)return;queue.push({n,q,p});run()}
+async function run(){if(busy||!queue.length)return;busy=true;const {n,q,p}=queue.shift();
  document.getElementById('q').textContent=(n?n.toUpperCase():'A GUEST')+' asks: '+q;whisper();spell.textContent='';await sleep(2500);
- const a=answer(q);window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
+ const a=(p!=null&&PRESETS[p])?PRESETS[p].a[Math.floor(Math.random()*PRESETS[p].a.length)]:answer(q);window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
  for(const c of toks){if(c===' '){spell.textContent+=' ';continue}const k=pos[c]?c:' ';mv(k);ghost();await sleep(1250);spell.textContent+=c;await sleep(350)}
  await sleep(1500);if(!queue.length){mv('GOODBYE');await sleep(1300);scream()}await sleep(2500);mv(' ');busy=false;run()}
 window.enq=enq;
 fb.onsubmit=e=>{e.preventDefault();if(fq.value.trim())enq('',fq.value.trim());fq.value=''};
-function connect(){const es=new EventSource(TOPIC+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==='message'){const d=JSON.parse(m.message);enq(String(d.n||'').slice(0,30),String(d.q||'').slice(0,140))}}catch(x){}};window.relayOK=()=>es.readyState}
+function connect(){const es=new EventSource(TOPIC+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==='message'){const d=JSON.parse(m.message);enq(String(d.n||'').slice(0,30),String(d.q||'').slice(0,140),Number.isInteger(d.p)?d.p:null)}}catch(x){}};window.relayOK=()=>es.readyState}
 connect();}
 </script></body></html>
