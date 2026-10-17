@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ouija</title>
+<script src="bank.js"></script>
+<style>
+body{margin:0;background:#050302;color:#e8d3a0;font-family:Georgia,serif;overflow:hidden}
+#tv{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#2a1608 0%,#050302 75%)}
+#board{position:relative;width:min(92vw,160vh);height:min(52vw,90vh);background:radial-gradient(ellipse,#6b4423,#3a2210 80%);border-radius:40px;box-shadow:0 0 120px #ff8a2a55,inset 0 0 80px #000;animation:flick 3s infinite}
+@keyframes flick{50%{box-shadow:0 0 90px #ff7a1a40,inset 0 0 80px #000}}
+.l{position:absolute;transform:translate(-50%,-50%);font-size:min(4vw,7vh);text-shadow:0 0 8px #000}
+#plan{position:absolute;width:9%;aspect-ratio:1/1.2;transform:translate(-50%,-45%);transition:left 1.1s ease-in-out,top 1.1s ease-in-out;background:radial-gradient(circle at 50% 42%,transparent 22%,#d9c08a 24%,#a07a40 70%);border-radius:50% 50% 45% 45%;opacity:.92;box-shadow:0 8px 20px #000}
+#q{position:fixed;top:2vh;left:0;right:0;text-align:center;font-size:3.2vh;min-height:4vh}
+#spell{position:fixed;bottom:5vh;left:0;right:0;text-align:center;font-size:6vh;letter-spacing:.3em;color:#ffb35c;text-shadow:0 0 20px #ff6a00}
+#qr{position:fixed;right:1.5vw;bottom:1.5vw;background:#000a;padding:10px;text-align:center;font-size:2vh;border-radius:10px}
+#qr img{width:20vh;display:block;background:#fff}
+#fb{position:fixed;left:1vw;bottom:1vw;opacity:.35}#fb:hover{opacity:1}
+#snd{position:fixed;top:1vh;right:1vw;background:#400;color:#fdd;border:0;padding:8px 14px;font-size:2vh;border-radius:8px}
+#foot{position:fixed;bottom:.3vh;left:50%;transform:translateX(-50%);font-size:1.6vh;opacity:.5}
+#phone{display:none;padding:24px;max-width:480px;margin:auto;overflow:auto}
+#phone input,#phone textarea,#phone button{width:100%;box-sizing:border-box;margin:8px 0;padding:14px;font-size:18px;background:#1a0f08;color:#e8d3a0;border:1px solid #6b4423;border-radius:10px}
+#phone button{background:#7a1f0f;font-weight:bold}
+</style></head><body>
+<div id="tv"><div id="q"></div><div id="board"><div id="plan"></div></div><div id="spell"></div>
+<div id="qr"><img src="qr-phone.png" alt="QR">Scan to ask the spirit</div>
+<form id="fb"><input id="fq" placeholder="Ask here if phones fail" size="28"><button>Ask</button></form>
+<button id="snd">🔊 Tap for sound</button><div id="foot">akirax.si</div></div>
+<div id="phone"><h1>🕯️ Ask the Spirit</h1><input id="pn" placeholder="Your name (optional)" maxlength="30"><textarea id="pq" rows="3" placeholder="Your question..." maxlength="140"></textarea><button id="ps">Send</button><p id="pm"></p><p style="opacity:.5;text-align:center">akirax.si</p></div>
+<script>
+const EXTRA=["THE OUIJA KNOWS","SPEAK UP","I HEAR YOU","CLOSER","WRONG QUESTION","BRAVE SOUL","FOOLISH SOUL","THE WIND KNOWS","CROWS AGREE","NOT FOR YOU","LATER","SOON SOON","WHO ASKS","WHY","THE MOON SAYS HI","BEHOLD","OBEY","FEAR NOT","FEAR","YIKES","THE SPIRIT YAWNS"];BANK.gen=BANK.gen.concat(EXTRA);
+const TOPIC='https://ntfy.sh/'+ROOM;
+if(location.search.includes('phone')){document.getElementById('tv').style.display='none';const P=document.getElementById('phone');P.style.display='block';document.body.style.overflow='auto';
+ ps.onclick=async()=>{const q=pq.value.trim();if(!q)return;pm.textContent='Sending to the other side...';try{await fetch(TOPIC,{method:'POST',body:JSON.stringify({n:pn.value.trim().slice(0,30),q:q.slice(0,140)})});pm.textContent='The spirit has heard you. Watch the board.';pq.value=''}catch(e){pm.textContent='The veil blocked it. Try again.'}}}
+else{
+const B=document.getElementById('board'),pos={};
+function put(t,x,y,s){const d=document.createElement('div');d.className='l';d.textContent=t;d.style.left=x+'%';d.style.top=y+'%';if(s)d.style.fontSize=s;B.appendChild(d);pos[t]=[x,y]}
+const A='ABCDEFGHIJKLM',N='NOPQRSTUVWXYZ';
+for(let i=0;i<13;i++){const x=8+i*7,a=(i-6)/6;put(A[i],x,34+a*a*10);put(N[i],x,56+a*a*10)}
+for(let i=0;i<10;i++)put('1234567890'[i],22+i*6.2,80);
+put('YES',15,12,'min(5vw,8vh)');put('NO',85,12,'min(5vw,8vh)');put('GOODBYE',50,93,'min(3.5vw,6vh)');put(' ',50,16);
+const pl=document.getElementById('plan');function mv(k){const p=pos[k]||pos[' '];pl.style.left=p[0]+'%';pl.style.top=p[1]+'%'}mv(' ');
+// audio
+let ac=null,master;snd.onclick=()=>{if(!ac){ac=new AudioContext();master=ac.createGain();master.gain.value=.6;master.connect(ac.destination);drone();snd.textContent='🔊 On'}else ac.resume()};
+function noiseBuf(){const b=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
+function drone(){[55,58.3,82.4].forEach(f=>{const o=ac.createOscillator(),g=ac.createGain(),l=ac.createOscillator(),lg=ac.createGain();o.type='sawtooth';o.frequency.value=f;l.frequency.value=.1+Math.random()*.2;lg.gain.value=3;l.connect(lg).connect(o.frequency);const fl=ac.createBiquadFilter();fl.type='lowpass';fl.frequency.value=300;g.gain.value=.05;o.connect(fl).connect(g).connect(master);o.start();l.start()})}
+function whisper(){if(!ac)return;const s=ac.createBufferSource();s.buffer=noiseBuf();const f=ac.createBiquadFilter();f.type='bandpass';f.Q.value=8;f.frequency.setValueAtTime(800,ac.currentTime);f.frequency.linearRampToValueAtTime(2500,ac.currentTime+1.5);const g=ac.createGain();g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(.5,ac.currentTime+.4);g.gain.linearRampToValueAtTime(0,ac.currentTime+2);s.connect(f).connect(g).connect(master);s.start();s.stop(ac.currentTime+2);
+ const o=ac.createOscillator(),og=ac.createGain();o.type='square';o.frequency.setValueAtTime(90,ac.currentTime+.2);o.frequency.linearRampToValueAtTime(140,ac.currentTime+1);og.gain.setValueAtTime(0,ac.currentTime);og.gain.linearRampToValueAtTime(.08,ac.currentTime+.3);og.gain.linearRampToValueAtTime(0,ac.currentTime+1.1);o.connect(og).connect(master);o.start();o.stop(ac.currentTime+1.2)}
+function ghost(){if(!ac)return;const o=ac.createOscillator(),g=ac.createGain(),v=ac.createOscillator(),vg=ac.createGain();o.type='sine';o.frequency.value=600+Math.random()*300;v.frequency.value=6;vg.gain.value=15;v.connect(vg).connect(o.frequency);g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(.12,ac.currentTime+.3);g.gain.linearRampToValueAtTime(0,ac.currentTime+1);o.connect(g).connect(master);o.start();v.start();o.stop(ac.currentTime+1.1);v.stop(ac.currentTime+1.1)}
+function scream(){if(!ac)return;const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(900,t);o.frequency.exponentialRampToValueAtTime(300,t+1.2);g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+1.3);o.connect(g).connect(master);o.start();o.stop(t+1.3);const k=ac.createOscillator(),kg=ac.createGain();k.frequency.setValueAtTime(80,t+1.3);k.frequency.exponentialRampToValueAtTime(30,t+1.8);kg.gain.setValueAtTime(.8,t+1.3);kg.gain.exponentialRampToValueAtTime(.001,t+1.9);k.connect(kg).connect(master);k.start(t+1.3);k.stop(t+2)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function answer(q){q=' '+q.toLowerCase()+' ';
+ if(/\b(love|crush|date|marry|kiss|boyfriend|girlfriend|like me)\b/.test(q))return pick(BANK.love);
+ if(/\b(die|death|dead|kill|alive|ghost)\b/.test(q))return pick(BANK.death);
+ if(/\bwho\b/.test(q))return pick(BANK.who);if(/\bwhen\b/.test(q))return pick(BANK.when);if(/\bwhere\b/.test(q))return pick(BANK.where);
+ if(/^\s*(is|are|am|will|do|does|did|can|could|should|would|have|has|was)\b/.test(q)){const r=Math.random();return pick(r<.4?BANK.yes:r<.8?BANK.no:BANK.maybe)}
+ return pick(Math.random()<.3?BANK.maybe:BANK.gen)}
+const queue=[];let busy=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function enq(n,q){queue.push({n,q});run()}
+async function run(){if(busy||!queue.length)return;busy=true;const {n,q}=queue.shift();
+ document.getElementById('q').textContent=(n?n.toUpperCase():'A GUEST')+' asks: '+q;whisper();spell.textContent='';await sleep(2500);
+ const a=answer(q);window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
+ for(const c of toks){if(c===' '){spell.textContent+=' ';continue}const k=pos[c]?c:' ';mv(k);ghost();await sleep(1250);spell.textContent+=c;await sleep(350)}
+ await sleep(1500);if(!queue.length){mv('GOODBYE');await sleep(1300);scream()}await sleep(2500);mv(' ');busy=false;run()}
+window.enq=enq;
+fb.onsubmit=e=>{e.preventDefault();if(fq.value.trim())enq('',fq.value.trim());fq.value=''};
+function connect(){const es=new EventSource(TOPIC+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==='message'){const d=JSON.parse(m.message);enq(String(d.n||'').slice(0,30),String(d.q||'').slice(0,140))}}catch(x){}};window.relayOK=()=>es.readyState}
+connect();}
+</script></body></html>
