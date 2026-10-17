@@ -15,20 +15,23 @@ body{margin:0;background:#050302;color:#e8d3a0;font-family:Georgia,serif;overflo
 #snd{position:fixed;top:1vh;right:1vw;background:#400;color:#fdd;border:0;padding:8px 14px;font-size:2vh;border-radius:8px}
 #foot{position:fixed;bottom:.3vh;left:50%;transform:translateX(-50%);font-size:1.6vh;opacity:.5}
 #phone{display:none;padding:24px;max-width:480px;margin:auto;overflow:auto}
-#phone input,#phone textarea,#pre button{background:#2a1208;font-weight:normal;font-size:20px;padding:18px}
+#phone input,#phone textarea,#pre button{display:block;width:100%;box-sizing:border-box;margin:10px 0;color:#e8d3a0;border:1px solid #8a3a1a;border-radius:12px;font-family:Georgia,serif;text-align:left;background:#2a1208;font-weight:normal;font-size:20px;padding:18px;box-shadow:0 0 12px #ff3a0030}
 #phone button#ps,#phone button.x{width:100%;box-sizing:border-box;margin:8px 0;padding:14px;font-size:18px;background:#1a0f08;color:#e8d3a0;border:1px solid #6b4423;border-radius:10px}
-#pre button{background:#2a1208;font-weight:normal;font-size:20px;padding:18px}
+#pre button{display:block;width:100%;box-sizing:border-box;margin:10px 0;color:#e8d3a0;border:1px solid #8a3a1a;border-radius:12px;font-family:Georgia,serif;text-align:left;background:#2a1208;font-weight:normal;font-size:20px;padding:18px;box-shadow:0 0 12px #ff3a0030}
 #phone button#ps,#phone button.x{background:#7a1f0f;font-weight:bold}
+#dark{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;display:flex;align-items:center;justify-content:center}
+#ghost{width:40vh;opacity:0;transition:opacity 1s;filter:drop-shadow(0 0 40px #cfe8ff)}
+#tv.flick #board{animation:fl .12s steps(2) infinite}@keyframes fl{50%{filter:brightness(.25)}}
 </style></head><body>
 <div id="tv"><div id="q"></div><div id="board"><div id="plan"></div></div><div id="spell"></div>
 <div id="qr"><img src="qr-phone.png" alt="QR">Scan to ask the spirit</div>
 <form id="fb"><input id="fq" placeholder="Ask here if phones fail" size="28"><button>Ask</button></form>
-<button id="snd">🔊 Tap for sound</button><div id="foot">akirax.si</div></div>
+<button id="snd">🔊 Tap for sound</button><div id="foot">akirax.si</div><div id="dark"><svg id="ghost" viewBox="0 0 200 260"><defs><radialGradient id="gg" cx="50%" cy="35%" r="60%"><stop offset="0" stop-color="#f4fbff"/><stop offset=".7" stop-color="#9fb8c8" stop-opacity=".8"/><stop offset="1" stop-color="#9fb8c8" stop-opacity="0"/></radialGradient></defs><path d="M100 10C45 10 25 60 28 110 30 160 20 210 30 250 45 235 55 255 70 240 85 255 95 238 110 252 125 238 140 256 150 240 165 254 175 238 172 250 182 200 172 160 175 110 178 60 155 10 100 10Z" fill="url(#gg)"/><ellipse cx="72" cy="95" rx="15" ry="22" fill="#05070a"/><ellipse cx="128" cy="95" rx="15" ry="22" fill="#05070a"/><ellipse cx="100" cy="160" rx="16" ry="30" fill="#05070a"/></svg></div></div>
 <div id="phone"><h1>🕯️ Ask the Spirit</h1><div id="namestep"><label for="pn">Your costume name</label><input id="pn" placeholder="e.g. Headless Bride" maxlength="30" required><button class="x" id="nameok">Enter</button></div><div id="askstep" style="display:none"><p>Asking as <b id="nm"></b> <a href="#" id="chg" style="color:#c9a36a">change</a></p><div id="pre"></div><a href="#" id="own" style="color:#c9a36a;display:block;margin:10px 0">ask your own question</a><div id="ownbox" style="display:none"><textarea id="pq" rows="3" placeholder="Your question..." maxlength="140"></textarea><button id="ps">Send</button></div></div><p id="pm"></p><p style="opacity:.5;text-align:center">akirax.si</p></div>
 <script>
 const EXTRA=["THE OUIJA KNOWS","SPEAK UP","I HEAR YOU","CLOSER","WRONG QUESTION","BRAVE SOUL","FOOLISH SOUL","THE WIND KNOWS","CROWS AGREE","NOT FOR YOU","LATER","SOON SOON","WHO ASKS","WHY","THE MOON SAYS HI","BEHOLD","OBEY","FEAR NOT","FEAR","YIKES","THE SPIRIT YAWNS"];BANK.gen=BANK.gen.concat(EXTRA);
 const TOPIC='https://ntfy.sh/'+ROOM;
-if(location.search.includes('phone')){document.getElementById('tv').style.display='none';const P=document.getElementById('phone');P.style.display='block';document.body.style.overflow='auto';
+if(new URLSearchParams(location.search).has('phone')){document.getElementById('tv').style.display='none';const P=document.getElementById('phone');P.style.display='block';document.body.style.overflow='auto';
  async function send(q,p){q=q.trim();if(!q||!pn.value.trim())return;pm.textContent='Sending to the other side...';const m={n:pn.value.trim().slice(0,30),q:q.slice(0,140)};if(p!=null)m.p=p;try{await fetch(TOPIC,{method:'POST',body:JSON.stringify(m)});pm.textContent='The spirit has heard you. Watch the board.';pq.value='';shuffle()}catch(e){pm.textContent='The veil blocked it. Try again.'}}
 function shuffle(){pre.textContent='';const ids=[...PRESETS.keys()].sort(()=>Math.random()-.5).slice(0,3);for(const i of ids){const b=document.createElement('button');b.textContent=PRESETS[i].q;b.onclick=()=>send(PRESETS[i].q,i);pre.appendChild(b)}}
 const LS='ouijaCostume';function setName(v){v=v.trim().slice(0,30);if(!v){pm.textContent='Enter your costume name first.';return false}localStorage.setItem(LS,v);pn.value=v;nm.textContent=v;namestep.style.display='none';askstep.style.display='block';pm.textContent='';return true}
@@ -67,5 +70,23 @@ async function run(){if(busy||!queue.length)return;busy=true;const {n,q,p}=queue
 window.enq=enq;
 fb.onsubmit=e=>{e.preventDefault();if(fq.value.trim())enq('',fq.value.trim());fq.value=''};
 function connect(){const es=new EventSource(TOPIC+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==='message'){const d=JSON.parse(m.message);enq(String(d.n||'').slice(0,30),String(d.q||'').slice(0,140),Number.isInteger(d.p)?d.p:null)}}catch(x){}};window.relayOK=()=>es.readyState}
+const qs=new URLSearchParams(location.search);
+function nz(dur,f,q,vol,t0){const s=ac.createBufferSource();s.buffer=noiseBuf();const fl=ac.createBiquadFilter();fl.type='bandpass';fl.frequency.value=f;fl.Q.value=q;const g=ac.createGain();const t=ac.currentTime+(t0||0);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+dur*.3);g.gain.linearRampToValueAtTime(0,t+dur);s.connect(fl).connect(g).connect(master);s.start(t);s.stop(t+dur+.05)}
+function tone(type,f1,f2,dur,vol,t0){const t=ac.currentTime+(t0||0),o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(master);o.start(t);o.stop(t+dur+.05)}
+const AMB={whisper:v=>{for(let i=0;i<4;i++)nz(.5,1500+Math.random()*2000,6,v*.5,i*.45)},
+knock:v=>{[0,.25,.9,1.15].forEach(t=>{tone('sine',140,50,.15,v,t);nz(.06,900,2,v*.4,t)})},
+creak:v=>{const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type='sawtooth';o.frequency.setValueAtTime(70,t);o.frequency.linearRampToValueAtTime(110,t+.8);o.frequency.linearRampToValueAtTime(60,t+1.6);f.type='bandpass';f.frequency.value=900;f.Q.value=12;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*.6,t+.2);g.gain.linearRampToValueAtTime(0,t+1.6);o.connect(f).connect(g).connect(master);o.start(t);o.stop(t+1.7)},
+giggle:v=>{for(let i=0;i<6;i++)tone('triangle',900+i*30,700,.12,v*.3,i*.14)},
+breath:v=>{nz(1.4,500,1.5,v*.5,0);nz(1.8,380,1.5,v*.4,1.6)},
+chain:v=>{for(let i=0;i<14;i++){const t=Math.random()*1.2;tone('square',2500+Math.random()*2500,1800,.05,v*.12,t)}}};
+window.ambient=k=>{if(!ac)return;k=k||Object.keys(AMB)[Math.floor(Math.random()*6)];AMB[k](.15+Math.random()*.5);return k};
+(function ambLoop(){setTimeout(()=>{if(ac)ambient();ambLoop()},45000+Math.random()*75000)})();
+async function scare(){const d=document.getElementById('dark'),g=document.getElementById('ghost'),T=document.getElementById('tv');window.scareState='flicker';T.classList.add('flick');await sleep(900);T.classList.remove('flick');d.style.opacity=1;window.scareState='dark';await sleep(1000+Math.random()*1000);
+ window.scareState='ghost';g.style.opacity=.9;if(ac){Math.random()<.5?tone('sawtooth',110,55,2.2,.4):(tone('sawtooth',1100,350,1.3,.35))}await sleep(2200);
+ for(let i=0;i<4;i++){g.style.transition='none';g.style.opacity=i%2?.9:0;await sleep(90)}g.style.opacity=0;g.style.transition='opacity 1s';await sleep(300);d.style.opacity=0;window.scareState='done'}
+window.scare=scare;
+(function scLoop(){setTimeout(async function tryS(){if(busy||queue.length){setTimeout(tryS,5000);return}await scare();scLoop()},180000+Math.random()*180000)})();
+if(qs.has('scare'))setTimeout(()=>{if(!busy)scare()},1500);
+if(qs.has('sound'))setInterval(()=>{if(ac)ambient()},8000);
 connect();}
 </script></body></html>
