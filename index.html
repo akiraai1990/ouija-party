@@ -101,7 +101,7 @@ const queue=[];let busy=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function enq(n,q,p){if(queue.length>=20)return;queue.push({n,q,p});run()}
 async function run(){if(busy||!queue.length)return;busy=true;const {n,q,p}=queue.shift();
  document.getElementById('q').textContent=(n?n.toUpperCase():'A GUEST')+' asks: '+q;whisper();spell.textContent='';await sleep(2500);
- let a=(p!=null&&PRESETS[p])?bag(p):answer(q);if(a.includes('{NAME}')){const me=(n||'').toUpperCase();const pool=GUESTS.filter(g=>!me.split(/[^A-Z]+/).includes(g));a=a.replace(/\{NAME\}/g,pool[Math.floor(Math.random()*pool.length)]||'SOMEONE')}window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
+ let a=(p!=null&&PRESETS[p])?bag(p):answer(q);if(a.includes('{NAME}')){const me=(n||'').toUpperCase();const pool=(p!=null&&PRESETS[p]&&PRESETS[p].death)?FAKES:GUESTS.filter(g=>!me.split(/[^A-Z]+/).includes(g));a=a.replace(/\{NAME\}/g,pool[Math.floor(Math.random()*pool.length)]||'SOMEONE')}window.lastAnswer=a;const toks=(a==='YES'||a==='NO')?[a]:a.split('');
  for(const c of toks){if(c===' '){spell.textContent+=' ';continue}const k=pos[c]?c:' ';mv(k);ghost();await sleep(1250);spell.textContent+=c;await sleep(350)}
  await sleep(1500);if(!queue.length){mv('GOODBYE');await sleep(1300);scream()}await sleep(2500);mv(' ');busy=false;run()}
 window.enq=enq;const BAGS={};function bag(p){if(!BAGS[p]||!BAGS[p].length)BAGS[p]=[...PRESETS[p].a].sort(()=>Math.random()-.5);return BAGS[p].pop()}window._t={BAGS,bag};
