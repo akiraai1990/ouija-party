@@ -1,0 +1,143 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Builder's Run · akirax.si</title>
+<meta property="og:title" content="The Builder's Run"><meta property="og:description" content="15 minutes. 5 rooms. What kind of builder are you? · akirax.si">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:#0f1115;color:#eef;font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 90px;min-height:100vh}
+h1{font-size:28px;margin:8px 0}h2{font-size:22px;margin:6px 0 10px}.mut{color:#9aa3b2;font-size:14px}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:12px;background:#f5b301;color:#111;font-weight:700;font-size:17px;cursor:pointer}
+.btn.sec{background:#262b36;color:#eef}.btn:disabled{opacity:.4}
+.card{background:#181c24;border:1px solid #2a3040;border-radius:14px;padding:12px;margin:10px 0}
+.row{display:flex;align-items:center;gap:8px}.row .grow{flex:1}
+.step{width:44px;height:44px;border-radius:10px;border:0;background:#262b36;color:#fff;font-size:22px;cursor:pointer}
+.amt{min-width:64px;text-align:center;font-weight:700}
+#bar{pointer-events:none;position:fixed;left:0;right:0;bottom:0;background:#0b0d11ee;border-top:1px solid #2a3040;padding:10px 16px;font-size:14px;display:flex;justify-content:space-between}
+.bk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bk .btn{margin:0;font-size:15px;padding:12px}
+.blk{touch-action:none;user-select:none;-webkit-user-select:none;background:#22324a;border:1px solid #3a5a86;border-radius:10px;padding:12px;margin:6px 0;cursor:grab}
+.blk.trig{background:#3a2a10;border-color:#a87a18}
+#pal{display:grid;grid-template-columns:1fr 1fr;gap:6px}#pal .blk{margin:0;padding:10px;font-size:14px}#pal .blk.used{opacity:.3}
+#zone{min-height:120px;border:2px dashed #3a4258;border-radius:14px;padding:8px}#zone.hot{border-color:#f5b301}
+#zone .blk{display:flex;justify-content:space-between;align-items:center}
+.x{border:0;background:none;color:#f88;font-size:20px;cursor:pointer;padding:0 6px}
+.ghost{position:fixed;pointer-events:none;z-index:9;opacity:.9;width:240px}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #3a4258;background:#0b0d11;color:#fff;font-size:16px;margin:6px 0}
+label{font-size:14px;color:#9aa3b2}
+canvas{width:100%;border-radius:14px}
+ol.rules li{margin:8px 0}
+</style></head><body><div id="app"></div><div id="bar"><span id="lv">The Builder's Run</span><span id="clk">0:00</span></div>
+<script>
+// The Builder's Run · akirax.si — client records raw moves only; no scoring here.
+const RELAY='https://ntfy.sh/br-7b4a9718c746596ca04f20cd';
+const DOOR='b7baeda7582d85f92c317b64d418285d00ab79dad090007fa47fb487965e2a57';
+const $=s=>document.querySelector(s),app=$('#app');
+const rid=[...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const T0=Date.now();const R={v:1,run:rid,started:new Date(T0).toISOString(),ua:navigator.userAgent,vw:innerWidth,moves:[]};
+function log(lvl,type,data){R.moves.push({t:Date.now()-T0,at:new Date().toISOString(),lvl,type,data:data||{}})}
+setInterval(()=>{const s=Math.floor((Date.now()-T0)/1000);$('#clk').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},500);
+function view(lv,html){$('#lv').textContent=lv;app.innerHTML=html;scrollTo(0,0)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// RULES
+function rules(){log(0,'view',{s:'rules'});view('Rules',`<h1>The Builder's Run</h1><p class="mut">5 rooms · about 15 minutes · by akirax.si</p>
+<ol class="rules">
+<li><b>E</b>very tap you make is recorded, so play like it's real.</li>
+<li><b>M</b>oney here is fake, but treat it like yours.</li>
+<li><b>B</b>e quick: one room has a clock.</li>
+<li><b>E</b>xplain yourself honestly when asked.</li>
+<li><b>R</b>ead carefully. Not every door is on the map.</li></ol>
+<p class="mut">There are no trick questions, just choices.</p>
+<button class="btn" id="go">Start the run</button>`);$('#go').onclick=()=>{log(0,'start');L1()}}
+
+// L1
+const BETS=[['b1','Ads on a new channel'],['b2','Bulk inventory at a discount'],['b3','Faster website checkout'],['b4','A trending viral product'],['b5','Part-time helper']];
+let alloc={};
+function L1(){log(1,'enter');BETS.forEach(b=>alloc[b[0]]=0);
+view('Room 1 · $1,000 Shop',`<h2>Room 1: The $1,000 Shop</h2><p>You run a small online shop. You have <b>$1,000</b>. Spread it across any bets, or keep some.</p>
+${BETS.map(b=>`<div class="card row"><div class="grow">${b[1]}</div><button class="step" data-b="${b[0]}" data-d="-100">−</button><span class="amt" id="a_${b[0]}">$0</span><button class="step" data-b="${b[0]}" data-d="100">+</button></div>`).join('')}
+<div class="card">Kept in cash: <b id="keep">$1,000</b></div><button class="btn" id="lock">Lock in my bets</button>`);
+app.querySelectorAll('.step').forEach(e=>e.onclick=()=>{const b=e.dataset.b,d=+e.dataset.d,tot=Object.values(alloc).reduce((a,c)=>a+c,0);
+if(d>0&&tot>=1000||d<0&&alloc[b]<=0)return;alloc[b]+=d;log(1,'adjust',{bet:b,delta:d,now:alloc[b]});$('#a_'+b).textContent='$'+alloc[b];$('#keep').textContent='$'+(1000-Object.values(alloc).reduce((a,c)=>a+c,0))});
+$('#lock').onclick=()=>{log(1,'lock',{alloc:{...alloc},keep:1000-Object.values(alloc).reduce((a,c)=>a+c,0)});badWeek()}}
+function badWeek(){view('Room 1 · Bad week',`<h2>Surprise: a bad week</h2><p>A refund and slow sales hit at once. You need <b>$300</b> by Friday.</p>
+${[['reserve','Pay it from the cash I kept'],['pull','Pull money back out of a bet'],['card','Put it on a credit card'],['wait','Wait and hope sales pick up']].map(o=>`<button class="btn sec" data-o="${o[0]}">${o[1]}</button>`).join('')}`);
+app.querySelectorAll('[data-o]').forEach(e=>e.onclick=()=>{log(1,'badweek',{choice:e.dataset.o});L2()})}
+
+// L2
+const MSG=[['m1','Your biggest client wants a call today about an invoice.'],['m2','The weekly social post needs scheduling.'],['m3','Supplier: prices go up 8% next month.'],['m4','Newsletter: "10 growth hacks you missed".'],['m5','Customer: order arrived broken, photo attached.'],['m6','"Where is my order?" for the 6th time this week.'],['m7','PayPaI Security: account limited. Verify now at paypa1-resolve.co'],['m8','Accountant needs receipts by Friday.'],['m9','Cold pitch from an SEO agency.'],['m10','Your helper asks to take Thursday off.'],['m11','40 orders need typing into the books.'],['m12','Friend: "got 5 min for a big idea?"']];
+function L2(){log(2,'enter');let i=0,left=90,done=false;
+view('Room 2 · Inbox Fire',`<h2>Room 2: Inbox Fire</h2><p>12 messages, 90 seconds. Sort each one.</p><div class="card"><div class="mut" id="ic"></div><p id="im" style="font-size:18px;min-height:56px"></p>
+<div class="bk">${['do','delegate','automate','ignore'].map(k=>`<button class="btn sec" data-k="${k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div></div><div class="mut">Time left: <b id="tl">90</b>s</div>`);
+const show=()=>{$('#ic').textContent=`Message ${i+1} of 12`;$('#im').textContent=MSG[i][1];log(2,'show',{msg:MSG[i][0]})};show();
+const tm=setInterval(()=>{left--;$('#tl').textContent=left;if(left<=0)fin('timeout')},1000);
+function fin(why){if(done)return;done=true;clearInterval(tm);log(2,'end',{why,sorted:i});L3()}
+app.querySelectorAll('[data-k]').forEach(e=>e.onclick=()=>{if(done)return;log(2,'sort',{msg:MSG[i][0],bucket:e.dataset.k});i++;i>=12?fin('done'):show()})}
+
+// L3
+const BLK=[['k1','Take payment automatically'],['k2','Copy order into spreadsheet by hand'],['k3','Auto-send receipt email'],['k4','Auto-print shipping label'],['k5','Text me on every order'],['k6','Hire someone to watch the inbox'],['k7','Auto-update inventory count'],['k8','Check every order by hand'],['k9','Weekly 15-min numbers review']];
+let seq=[];
+function L3(){log(3,'enter');seq=[];
+view('Room 3 · Build the Machine',`<h2>Room 3: Build the Machine</h2><p>Your shop gets an order. Drag blocks into the machine, top to bottom, so it runs without you. Use as many or as few as you like. Tap × to remove.</p>
+<div id="zone"><div class="blk trig">⚡ An order comes in</div></div>
+<p class="mut">Blocks: drag up into the machine (or tap to add)</p><div id="pal">${BLK.map(b=>`<div class="blk" data-id="${b[0]}">${b[1]}</div>`).join('')}</div>
+<button class="btn" id="ship">The machine is done</button>`);
+app.querySelectorAll('#pal .blk').forEach(drag);$('#ship').onclick=()=>{log(3,'submit',{seq:[...seq]});L4()}}
+function render(){const z=$('#zone');z.querySelectorAll('[data-s]').forEach(e=>e.remove());document.querySelectorAll('#pal .blk').forEach(e=>e.classList.toggle('used',seq.includes(e.dataset.id)));seq.forEach((id,n)=>{const d=document.createElement('div');d.className='blk';d.dataset.s=n;d.innerHTML=`<span>${n+1}. ${BLK.find(b=>b[0]==id)[1]}</span><button class="x">×</button>`;d.querySelector('.x').onclick=()=>{log(3,'remove',{block:id,pos:n});seq.splice(n,1);render()};z.appendChild(d)})}
+function add(id,y,how){const z=$('#zone');let pos=seq.length;if(y!=null){const it=[...z.querySelectorAll('[data-s]')];for(let n=0;n<it.length;n++){const r=it[n].getBoundingClientRect();if(y<r.top+r.height/2){pos=n;break}}}
+if(seq.includes(id)){log(3,'dup',{block:id});return}seq.splice(pos,0,id);log(3,'add',{block:id,pos,how});render()}
+function drag(el){let g=null,sx,sy,moved=false;
+el.addEventListener('pointerdown',e=>{e.preventDefault();sx=e.clientX;sy=e.clientY;moved=false;el.setPointerCapture(e.pointerId)});
+el.addEventListener('pointermove',e=>{if(sx==null)return;if(!moved&&Math.hypot(e.clientX-sx,e.clientY-sy)<8)return;
+if(!g){moved=true;g=el.cloneNode(true);g.classList.add('ghost');document.body.appendChild(g)}if(e.clientY<60)scrollBy(0,-12);else if(e.clientY>innerHeight-70)scrollBy(0,12);g.style.left=(e.clientX-120)+'px';g.style.top=(e.clientY-22)+'px';
+const r=$('#zone').getBoundingClientRect();$('#zone').classList.toggle('hot',e.clientY>=r.top&&e.clientY<=r.bottom&&e.clientX>=r.left&&e.clientX<=r.right)});
+const up=e=>{if(sx==null)return;const r=$('#zone').getBoundingClientRect();$('#zone').classList.remove('hot');
+if(g){g.remove();g=null;if(e.clientY>=r.top&&e.clientY<=r.bottom&&e.clientX>=r.left&&e.clientX<=r.right)add(el.dataset.id,e.clientY,'drag:'+e.pointerType);else log(3,'drop_miss',{block:el.dataset.id})}
+else if(!moved)add(el.dataset.id,null,'tap:'+e.pointerType);sx=null};
+el.addEventListener('pointerup',up);el.addEventListener('pointercancel',()=>{if(g){g.remove();g=null}sx=null})}
+
+// L4
+function L4(){log(4,'enter');const top=Object.entries(alloc).sort((a,b)=>b[1]-a[1])[0];const nm=top&&top[1]>0?BETS.find(b=>b[0]==top[0])[1]:null;
+log(4,'loss_shown',{bet:top&&top[1]>0?top[0]:null,amount:top?top[1]:0});
+view('Room 4 · Loss Room',`<h2>Room 4: The Loss Room</h2><p>${nm?`Your biggest bet, <b>$${top[1]} on "${esc(nm)}"</b>, flopped. The money is gone.`:`You kept all your cash, and the shop stalled while others moved. That cost you a season.`}</p><p>What happened?</p>
+${[['blame','Bad luck. The market turned.'],['own','My call. I misjudged it.'],['rule','New rule for next time.']].map(o=>`<button class="btn sec" data-o="${o[0]}">${o[1]}</button>`).join('')}
+<label>In a sentence (optional)</label><textarea id="why" rows="3" maxlength="400"></textarea><button class="btn" id="nx" disabled>Continue</button>`);
+let ch=null;app.querySelectorAll('[data-o]').forEach(e=>e.onclick=()=>{ch=e.dataset.o;log(4,'choose',{choice:ch});app.querySelectorAll('[data-o]').forEach(x=>x.style.outline=x==e?'2px solid #f5b301':'');$('#nx').disabled=false});
+$('#nx').onclick=()=>{log(4,'explain',{choice:ch,text:$('#why').value.trim()});L5()}}
+
+// L5
+async function kdf(w){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(w),'PBKDF2',false,['deriveBits']);
+const b=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode('builders-run-door'),iterations:150000},k,256);return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function L5(){log(5,'enter');view('Room 5',`<h2>Room 5: The Corridor</h2><p>The run is almost over. There is a plain door here with a keypad.</p>
+<input id="pw" autocomplete="off" autocapitalize="off" placeholder="Word"><button class="btn sec" id="try">Try the door</button><p class="mut" id="dm"></p><button class="btn" id="past">Walk past to the exit</button>`);
+$('#try').onclick=async()=>{const w=$('#pw').value.trim().toLowerCase();const ok=(await kdf(w))===DOOR;log(5,'door_try',{ok,len:w.length});
+if(ok){R.door_proof=await sha(rid+':'+w);bonus()}else $('#dm').textContent='Nothing happens.'};$('#past').onclick=()=>{log(5,'walk_past');end()}}
+function bonus(){const code='BR-'+R.door_proof.slice(0,4).toUpperCase()+'-'+rid.slice(0,4).toUpperCase();R.code=code;log(5,'door_open',{code});
+view('Hidden Door',`<h2>The Hidden Door</h2><p>You found it. Your code: <b style="font-size:22px">${code}</b></p><p>Bonus: you get one extra hour every week for a year. What exactly do you build with it?</p>
+<textarea id="bx" rows="4" maxlength="500"></textarea><button class="btn" id="bd">Done</button>`);$('#bd').onclick=()=>{log(5,'bonus',{text:$('#bx').value.trim()});end()}}
+
+// END: type from neutral rules (style, not score)
+function btype(){const m=R.moves,lk=(m.find(x=>x.type=='lock')||{}).data||{alloc:{},keep:1000};const mx=Math.max(0,...Object.values(lk.alloc||{}));
+const c={};m.filter(x=>x.type=='sort').forEach(x=>c[x.data.bucket]=(c[x.data.bucket]||0)+1);const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+if(mx>=600)return['Hunter','You go where the opening is, fast.'];if(lk.keep>=500)return['Keeper','You protect the base before you swing.'];
+const map={do:['Operator','You grab the wheel and get it done.'],delegate:['Conductor','You move work to the right hands.'],automate:['Architect','You build systems that run without you.'],ignore:['Editor','You cut noise and guard your focus.']};
+return top?map[top[0]]:['Explorer','You are still mapping the territory.']}
+function card(t){const c=document.createElement('canvas');c.width=1080;c.height=1350;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,0,1350);g.addColorStop(0,'#1b2230');g.addColorStop(1,'#0b0d11');x.fillStyle=g;x.fillRect(0,0,1080,1350);
+x.fillStyle='#f5b301';x.fillRect(80,120,120,12);x.fillStyle='#9aa3b2';x.font='600 44px system-ui,sans-serif';x.fillText("THE BUILDER'S RUN",80,220);x.fillStyle='#fff';x.font='800 150px system-ui,sans-serif';x.fillText(t[0],80,560);
+x.font='48px system-ui,sans-serif';x.fillStyle='#dde';wrap(x,t[1],80,680,920,64);if(R.code){x.fillStyle='#f5b301';x.font='700 44px system-ui,sans-serif';x.fillText('Found the hidden door',80,1000)}
+x.fillStyle='#9aa3b2';x.font='40px system-ui,sans-serif';x.fillText('akirax.si',80,1250);return c}
+function wrap(x,s,X,Y,w,lh){let l='';s.split(' ').forEach(wd=>{if(x.measureText(l+wd).width>w){x.fillText(l,X,Y);Y+=lh;l=''}l+=wd+' '});x.fillText(l,X,Y)}
+function end(){const t=btype();R.type=t[0];log(6,'end_view',{type:t[0]});
+view('Finish',`<h2>You're a${/^[AEIOU]/.test(t[0])?'n':''} ${t[0]}</h2><div id="cv"></div><button class="btn sec" id="sh">Share my card</button>
+<div class="card"><p>Want an invite to the builder meetup? Tell us who you are.</p><label>Name</label><input id="fn" autocomplete="name"><label>Email</label><input id="fe" type="email" autocomplete="email"><label>City</label><input id="fc"><label>What are you building?</label><textarea id="fb" rows="3" maxlength="500"></textarea>
+<button class="btn" id="sb">Send my run</button><p class="mut" id="sm"></p></div><p class="mut">The Builder's Run · akirax.si</p>`);
+const c=card(t);$('#cv').appendChild(c);
+$('#sh').onclick=()=>{log(6,'share');c.toBlob(async b=>{const f=new File([b],'builder-card.png',{type:'image/png'});try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:"The Builder's Run",text:"I'm a"+(/^[AEIOU]/.test(t[0])?'n ':' ')+t[0]+'. play.akirax.si/builders'});else throw 0}catch(e){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='builder-card.png';a.click()}})};
+$('#sb').onclick=async()=>{const f={name:$('#fn').value.trim(),email:$('#fe').value.trim(),city:$('#fc').value.trim(),building:$('#fb').value.trim()};
+if(!f.name||!/^\S+@\S+\.\S+$/.test(f.email)){$('#sm').textContent='Please add your name and a valid email.';return}
+$('#sb').disabled=true;$('#sm').textContent='Sending…';log(6,'submit');R.form=f;R.finished=new Date().toISOString();
+try{await send(R);$('#sm').textContent='Run received. Thanks for playing!';window.__sent=true}catch(e){$('#sm').textContent='Could not send. Wait 10 seconds and tap again.';$('#sb').disabled=false;localStorage.setItem('br_'+rid,JSON.stringify(R))}}}
+async function send(o){const b=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))));const N=3000,n=Math.ceil(b.length/N);
+for(let i=0;i<n;i++){let tries=0;for(;;){const r=await fetch(RELAY,{method:'POST',body:`BR1|${o.run}|${i}|${n}|`+b.slice(i*N,(i+1)*N)});if(r.ok)break;if(++tries>3)throw new Error('relay '+r.status);await new Promise(z=>setTimeout(z,4000*tries))}}}
+rules();
+</script></body></html>
