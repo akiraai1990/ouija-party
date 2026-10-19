@@ -28,7 +28,9 @@ ol.rules li{margin:8px 0}
 </style></head><body><div id="app"></div><div id="bar"><span id="lv">The Builder's Run</span><span id="clk">0:00</span></div>
 <script>
 // The Builder's Run · akirax.si — client records raw moves only; no scoring here.
-const RELAY='https://ntfy.sh/br-7b4a9718c746596ca04f20cd';
+const RELAY='https://ntfy.sh/br-6e7af1cf7858e16e05ebc6a7';
+const PUB='MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA4cbQq0Ve70yUWuGucx2LdyBBPXrl3mwrZ+eL0ziUILkshS0V3g0gypEsjjSomrdpyVoufhurGKqmLLGKQQEH1/B8b6hZU95pADtOqg4yTlLwi14wA2EyiYrVEoZKIGSt38s4XrGe3MfT3iEiE8+NacAGBL1b9JSK7VBow/IgYHsjx8oOY6eQ9gsu3v7kwwaT26fAekfCZQAK3QY4F7hSrxFRHUE4HHLO+SgGyt4XA89QjT6lqx4H5qkn3k4nI+ik22rliHFe70c84qM0Wk/4h5NPYEbymwuvVYXOg5xifDjdKCIEi3RUls/pGhlQ2v67bxafA01hsCCl2g6jLHHm81n/KWUkixRYvCh2LXshKdFjwpfCLXHjMFyQZUIPg/L+ltBuake/Gu1SE682m/W2N+avDv7H+dSx1KFlnU/oNa9IrnFyaH+xaySAcB/XREKQgnTnLVPhklULquitYBh4YtQSzHw0wPh2oo6QcE3EjGlNcSHIMckKANm9TQMtQJtfAgMBAAE=';
+const DOOR2='9e08eb74e26936e8840e1f8c120807dff0c31924e2207729f4c2aaefeb3c2779',DOOR_OLD_UNTIL=Date.parse('2026-10-20T16:00:00Z');
 const DOOR='b7baeda7582d85f92c317b64d418285d00ab79dad090007fa47fb487965e2a57';
 const $=s=>document.querySelector(s),app=$('#app');
 const rid=[...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -105,13 +107,13 @@ let ch=null;app.querySelectorAll('[data-o]').forEach(e=>e.onclick=()=>{ch=e.data
 $('#nx').onclick=()=>{log(4,'explain',{choice:ch,text:$('#why').value.trim()});L5()}}
 
 // L5
-async function kdf(w){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(w),'PBKDF2',false,['deriveBits']);
-const b=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode('builders-run-door'),iterations:150000},k,256);return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function kdf(w,salt='builders-run-door',it=150000){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(w),'PBKDF2',false,['deriveBits']);
+const b=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode(salt),iterations:it},k,256);return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function L5(){log(5,'enter');view('Room 5',`<h2>Room 5: The Corridor</h2><p>The run is almost over. There is a plain door here with a keypad.</p>
 <input id="pw" autocomplete="off" autocapitalize="off" placeholder="Word"><button class="btn sec" id="try">Try the door</button><p class="mut" id="dm"></p><button class="btn" id="past">Walk past to the exit</button>`);
-$('#try').onclick=async()=>{const w=$('#pw').value.trim().toLowerCase();const ok=(await kdf(w))===DOOR;log(5,'door_try',{ok,len:w.length});
-if(ok){R.door_proof=await sha(rid+':'+w);bonus()}else $('#dm').textContent='Nothing happens.'};$('#past').onclick=()=>{log(5,'walk_past');end()}}
+$('#try').onclick=async()=>{const w=$('#pw').value.trim().toLowerCase().replace(/\s+/g,' ');$('#dm').textContent='…';let v=0;if((await kdf(w,'builders-run-door-v2',250000))===DOOR2)v=2;else if(Date.now()<DOOR_OLD_UNTIL&&(await kdf(w))===DOOR)v=1;const ok=v>0;log(5,'door_try',{ok,len:w.length});
+if(ok){R.door_v=v;}$('#dm').textContent='';if(ok){R.door_proof=await sha(rid+':'+w);bonus()}else $('#dm').textContent='Nothing happens.'};$('#past').onclick=()=>{log(5,'walk_past');end()}}
 function bonus(){const code='BR-'+R.door_proof.slice(0,4).toUpperCase()+'-'+rid.slice(0,4).toUpperCase();R.code=code;log(5,'door_open',{code});
 view('Hidden Door',`<h2>The Hidden Door</h2><p>You found it. Your code: <b style="font-size:22px">${code}</b></p><p>Bonus: you get one extra hour every week for a year. What exactly do you build with it?</p>
 <textarea id="bx" rows="4" maxlength="500"></textarea><button class="btn" id="bd">Done</button>`);$('#bd').onclick=()=>{log(5,'bonus',{text:$('#bx').value.trim()});end()}}
@@ -137,7 +139,15 @@ $('#sb').onclick=async()=>{const f={name:$('#fn').value.trim(),email:$('#fe').va
 if(!f.name||!/^\S+@\S+\.\S+$/.test(f.email)){$('#sm').textContent='Please add your name and a valid email.';return}
 $('#sb').disabled=true;$('#sm').textContent='Sending…';log(6,'submit');R.form=f;R.finished=new Date().toISOString();
 try{await send(R);$('#sm').textContent='Run received. Thanks for playing!';window.__sent=true}catch(e){$('#sm').textContent='Could not send. Wait 10 seconds and tap again.';$('#sb').disabled=false;localStorage.setItem('br_'+rid,JSON.stringify(R))}}}
-async function send(o){const b=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))));const N=3000,n=Math.ceil(b.length/N);
-for(let i=0;i<n;i++){let tries=0;for(;;){const r=await fetch(RELAY,{method:'POST',body:`BR1|${o.run}|${i}|${n}|`+b.slice(i*N,(i+1)*N)});if(r.ok)break;if(++tries>3)throw new Error('relay '+r.status);await new Promise(z=>setTimeout(z,4000*tries))}}}
+const b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode(...u.subarray(i,i+8192));return btoa(s)};
+async function seal(o){const pk=await crypto.subtle.importKey('spki',Uint8Array.from(atob(PUB),c=>c.charCodeAt(0)),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
+const k=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(12));
+const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(o))));
+const ek=new Uint8Array(await crypto.subtle.encrypt({name:'RSA-OAEP'},pk,await crypto.subtle.exportKey('raw',k)));
+const ch=await sha(o.run+'|'+b64(ct));const t0=performance.now();let n=0;const BITS=16;
+for(;;n++){const h=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ch+'|'+n)));if(h[0]===0&&h[1]===0)break}
+return {v:2,run:o.run,k:b64(ek),iv:b64(iv),ct:b64(ct),pow:{n,bits:BITS,ms:Math.round(performance.now()-t0)}}}
+async function send(o){const b=btoa(JSON.stringify(await seal(o)));const N=3000,n=Math.ceil(b.length/N);
+for(let i=0;i<n;i++){let tries=0;for(;;){const r=await fetch(RELAY,{method:'POST',body:`BR2|${o.run}|${i}|${n}|`+b.slice(i*N,(i+1)*N)});if(r.ok)break;if(++tries>3)throw new Error('relay '+r.status);await new Promise(z=>setTimeout(z,4000*tries))}}}
 rules();
 </script></body></html>
